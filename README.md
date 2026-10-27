@@ -31,4 +31,6 @@ resumen estadístico y una revisión básica de calidad.
 USGS Earthquake Catalog (ComCat). Detalles en `datos/README.md`.
 
 ## Integrantes
-Completar con los nombres del equipo.
+Benjamin Agurto
+Maximiliano Segovia
+Cristobal Fernandez
