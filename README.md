@@ -33,4 +33,4 @@ USGS Earthquake Catalog (ComCat). Detalles en `datos/README.md`.
 ## Integrantes
 Benjamin Agurto
 Maximiliano Segovia
-Cristobal Fernandez
+Cristobal Férnandez
