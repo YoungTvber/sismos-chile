@@ -27,6 +27,9 @@ python main.py
 Carga el CSV con pandas e imprime dimensiones, columnas, tipos, nulos, duplicados,
 resumen estadístico y una revisión básica de calidad.
 
+## Repositorio
+https://github.com/YoungTvber/sismos-chile
+
 ## Fuente de datos
 USGS Earthquake Catalog (ComCat). Detalles en `datos/README.md`.
 
