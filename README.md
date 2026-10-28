@@ -4,8 +4,8 @@ Proyecto Final Integrador - Programación Avanzada (Ing. Civil Plan Común, Sede
 Avance 1: definición del problema, fuente de datos, diseño del pipeline, carga e inspección inicial.
 
 ## Pregunta del proyecto
-¿Cómo se distribuyen en el tiempo, el espacio y la profundidad los sismos de magnitud 4,5 o
-superior registrados en Chile entre 2000 y 2024, y qué zonas concentran la mayor actividad?
+¿La frecuencia anual de los sismos de magnitud 4,5 o superior en Chile aumenta o disminuye
+entre 2000 y 2024, y cambia según la magnitud?
 
 ## Estructura
 ```
