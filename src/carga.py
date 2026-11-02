@@ -1,4 +1,6 @@
-"""Carga e inspección inicial del catálogo de sismos de Chile (USGS)."""
+"""Lectura, inspección inicial y exportación de los datos de sismos de Chile (USGS)."""
+
+import os
 
 import pandas as pd
 
@@ -32,7 +34,7 @@ def cargar_datos(ruta):
 
 
 def inspeccionar_datos(datos):
-    """Muestra por consola una inspección inicial del DataFrame."""
+    """Muestra por consola una inspección inicial del DataFrame (Avance 1)."""
     if datos is None:
         print("No existen datos disponibles para inspeccionar.")
         return
@@ -56,31 +58,18 @@ def inspeccionar_datos(datos):
     print(datos.describe(include="all"))
 
 
-def revisar_calidad(datos):
+def exportar_datos(datos, ruta):
     """
-    Revisión adicional de problemas esperables en el catálogo sísmico.
-    Solo informa; no modifica el DataFrame.
+    Guarda el DataFrame procesado en un CSV sin tocar el archivo original.
+
+    Retorna True si se pudo guardar, False en caso contrario.
     """
-    if datos is None:
-        return
-
-    print("\nRevisión de calidad:")
-    print("- Identificadores repetidos (id):", datos["id"].duplicated().sum())
-
-    fechas = pd.to_datetime(datos["time"], errors="coerce", utc=True)
-    print("- Fechas de 'time' no convertibles:", fechas.isna().sum())
-    print("- Tipo actual de 'time':", datos["time"].dtype)
-
-    print("- Magnitudes fuera de [0, 10]:",
-          (~datos["mag"].between(0, 10)).sum())
-    print("- Profundidades fuera de [0, 700] km:",
-          (~datos["depth"].between(0, 700)).sum())
-    print("- Latitudes fuera del rango esperado para Chile:",
-          (~datos["latitude"].between(-60, -15)).sum())
-    print("- Registros con eventos distintos de 'earthquake':",
-          (datos["type"] != "earthquake").sum())
-    print("- Registros con estado 'automatic' (sin revisión):",
-          (datos["status"] == "automatic").sum())
-
-    print("\nTipos de magnitud (magType):")
-    print(datos["magType"].value_counts())
+    try:
+        carpeta = os.path.dirname(ruta)
+        if carpeta:
+            os.makedirs(carpeta, exist_ok=True)
+        datos.to_csv(ruta, index=False, encoding="utf-8")
+        return True
+    except OSError as error:
+        print(f"Error: no fue posible guardar '{ruta}': {error}")
+        return False
