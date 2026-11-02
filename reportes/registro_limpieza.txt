@@ -1,0 +1,10 @@
+Columnas renombradas: 22 (nombres en español y sin abreviaturas).
+Texto: espacios y mayúsculas corregidos en 0 celdas.
+Duplicados: 0 filas idénticas eliminadas.
+Identificadores repetidos: 0.
+Fuera del área de estudio: 446 registros de 'West Chile Rise' eliminados (dorsal oceánica en mar abierto, distinta a la zona de subducción bajo estudio).
+Columnas eliminadas por no aportar al análisis: ['actualizado', 'fuente_ubicacion', 'fuente_magnitud'].
+Nulos: 4 columnas eliminadas y 4 conservadas con nulos (ver tabla). No se reemplazó ningún nulo por cero.
+Transformación: fecha_hora convertida de texto a datetime64 (UTC).
+Transformación: n_estaciones y n_estaciones_magnitud a Int64; tipo_magnitud, estado, tipo_evento y red a category.
+Variables nuevas: anio, mes, anio_completo, rango_magnitud, clase_profundidad y zona (por latitud; insular para Rapa Nui).
