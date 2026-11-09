@@ -1,17 +1,19 @@
-from src.carga import cargar_datos, exportar_datos
-from src.limpieza import (normalizar_columnas, limpiar_texto, eliminar_duplicados,
-                          filtrar_area_estudio, eliminar_columnas_metadatos, tratar_nulos)
-from src.transformaciones import convertir_fecha, convertir_tipos, crear_variables
-from src.validaciones import (diagnosticar_calidad, validar_dataset,
-                              comparar_antes_despues, resumen_final)
+import os
+import sys
 
-RUTA_ORIGINAL = "datos/originales/sismos_chile_usgs_2000_2024.csv"
+import pandas as pd
+
+from src.carga import cargar_dataset_limpio, exportar_datos
+from src.estadisticas import calcular_estadisticas
+from src.indicadores import calcular_indicadores
+from src.procesamiento import ejecutar_limpieza
+from src.validaciones import verificar_calculos
+from src.visualizaciones import crear_graficos
+
 RUTA_LIMPIO = "datos/procesados/dataset_limpio.csv"
-RUTA_REGISTRO = "reportes/registro_limpieza.txt"
-
-# Variables que cambian de tipo y variables nuevas (para la comparación final)
-N_TRANSFORMADAS = 7
-N_NUEVAS = 6
+RUTA_ESTADISTICAS = "resultados/estadisticas.csv"
+RUTA_INDICADORES = "resultados/indicadores.csv"
+CARPETA_GRAFICOS = "resultados/graficos"
 
 
 def titulo(texto):
@@ -20,67 +22,55 @@ def titulo(texto):
     print("=" * 60)
 
 
-def mostrar_registro(registro, desde):
-    """Imprime las acciones registradas desde la posición indicada."""
-    for linea in registro[desde:]:
-        print("-", linea)
-    return len(registro)
-
-
 def main():
-    registro = []
-    vistas = 0
+    # python main.py limpieza  -> repite solo el pipeline de limpieza (Avance 2)
+    if len(sys.argv) > 1 and sys.argv[1] == "limpieza":
+        ejecutar_limpieza()
+        return
 
-    titulo("1. CARGA")
-    original = cargar_datos(RUTA_ORIGINAL)
-    if original is None:
+    # El Avance 3 parte del dataset limpio; si no existe, se genera primero.
+    if not os.path.exists(RUTA_LIMPIO):
+        print("No se encontró el dataset limpio. Se ejecuta la limpieza del Avance 2.")
+        ejecutar_limpieza()
+
+    titulo("1. CARGA DEL DATASET LIMPIO")
+    datos = cargar_dataset_limpio(RUTA_LIMPIO)
+    if datos is None:
         print("El programa finalizó sin procesar los datos.")
         return
-    print("Carga realizada correctamente.")
+    print(f"Registros: {len(datos)} | Variables: {datos.shape[1]}")
 
-    titulo("2. DIAGNÓSTICO DEL CONJUNTO ORIGINAL")
-    antes = diagnosticar_calidad(original)
+    titulo("2. ESTADÍSTICAS DESCRIPTIVAS")
+    estadisticas = calcular_estadisticas(datos)
+    numericas = estadisticas[estadisticas["tipo"] == "numerica"]
+    resumen = numericas.pivot(index="medida", columns="variable", values="valor")
+    orden = ["registros", "media", "mediana", "minimo", "maximo", "rango",
+             "desviacion_estandar", "cuartil_1", "cuartil_3"]
+    pd.set_option("display.width", 200)
+    print(resumen.loc[orden].round(2).to_string())
+    print("\nFrecuencias (rango de magnitud y zona):")
+    for variable in ["rango_magnitud", "zona"]:
+        sub = estadisticas[estadisticas["variable"] == variable]
+        print(sub[["variable", "medida", "valor", "porcentaje"]].to_string(index=False))
+    exportar_datos(estadisticas, RUTA_ESTADISTICAS)
+    print(f"\nArchivo generado: {RUTA_ESTADISTICAS}")
 
-    titulo("3. LIMPIEZA")
-    datos = original.copy()          # el original no se modifica
-    datos = normalizar_columnas(datos, registro)
-    nulos_iniciales = datos.isna().sum()
-    datos = limpiar_texto(datos, registro)
-    datos = eliminar_duplicados(datos, registro)
-    datos = filtrar_area_estudio(datos, registro)
-    datos = eliminar_columnas_metadatos(datos, registro)
-    vistas = mostrar_registro(registro, vistas)
+    titulo("3. INDICADORES AUTOMATIZADOS")
+    indicadores = calcular_indicadores(datos)
+    for _, fila in indicadores.iterrows():
+        print(f"- {fila['indicador']}: {fila['resultado']}")
+    exportar_datos(indicadores, RUTA_INDICADORES)
+    print(f"\nArchivo generado: {RUTA_INDICADORES}")
 
-    titulo("4. TRATAMIENTO DE NULOS")
-    datos, tabla_nulos = tratar_nulos(datos, nulos_iniciales, registro)
-    print(tabla_nulos[["variable", "nulos_iniciales", "estrategia", "nulos_finales"]].to_string(index=False))
-    vistas = mostrar_registro(registro, vistas)
+    titulo("4. GRÁFICOS")
+    for ruta in crear_graficos(datos, CARPETA_GRAFICOS):
+        print(f"Gráfico guardado: {ruta}")
 
-    titulo("5. TRANSFORMACIONES")
-    datos = convertir_fecha(datos, registro)
-    datos = convertir_tipos(datos, registro)
-    datos = crear_variables(datos, registro)
-    vistas = mostrar_registro(registro, vistas)
-    print(datos[["fecha_hora", "magnitud", "anio", "mes", "rango_magnitud",
-                 "clase_profundidad", "zona"]].head())
-
-    titulo("6. VALIDACIÓN")
-    valido = validar_dataset(datos)
-
-    titulo("7. EXPORTACIÓN")
-    if valido and exportar_datos(datos, RUTA_LIMPIO):
-        print(f"Archivo generado: {RUTA_LIMPIO}")
+    titulo("5. VERIFICACIÓN DE CÁLCULOS")
+    if verificar_calculos(datos, estadisticas, indicadores):
+        print("\nTodas las verificaciones se cumplieron.")
     else:
-        print("No se exportó el archivo porque la validación falló.")
-        return
-
-    titulo("COMPARACIÓN ANTES Y DESPUÉS")
-    despues = resumen_final(datos)
-    comparar_antes_despues(antes, despues, N_TRANSFORMADAS, N_NUEVAS)
-
-    with open(RUTA_REGISTRO, "w", encoding="utf-8") as archivo:
-        archivo.write("\n".join(registro) + "\n")
-    print(f"\nRegistro de la limpieza guardado en {RUTA_REGISTRO}")
+        print("\nAlgunas verificaciones fallaron: revisar los cálculos.")
 
 
 if __name__ == "__main__":

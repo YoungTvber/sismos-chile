@@ -192,3 +192,44 @@ def resumen_final(datos):
         "duplicadas": int(datos.duplicated().sum()),
         "fuera_rango": sum(fuera.values()) + fuera_area,
     }
+
+
+def verificar_calculos(datos, estadisticas, indicadores):
+    """
+    Comprueba los resultados del Avance 3 con cálculos independientes.
+    Imprime cada verificación y devuelve True si todas se cumplen.
+    """
+    from src.estadisticas import frecuencia_anual   # import local para evitar ciclos
+    from src.indicadores import ajuste_lineal
+
+    anual = frecuencia_anual(datos)
+    mag = estadisticas[(estadisticas["variable"] == "magnitud")].set_index("medida")["valor"]
+    x = anual.index.to_numpy(dtype=float)
+    y = anual.to_numpy(dtype=float)
+    pendiente_manual = ((x - x.mean()) * (y - y.mean())).sum() / ((x - x.mean()) ** 2).sum()
+    pendiente_numpy = ajuste_lineal(x, y)[0]
+
+    controles = [
+        ("Frecuencia anual + años incompletos = total de registros",
+         int(anual.sum()) + int((~datos["anio_completo"]).sum()) == len(datos)),
+        ("Media de la magnitud coincide con pandas.describe()",
+         abs(mag["media"] - datos["magnitud"].describe()["mean"]) < 0.001),
+        ("Desviación estándar de la magnitud coincide con pandas.describe()",
+         abs(mag["desviacion_estandar"] - datos["magnitud"].describe()["std"]) < 0.001),
+        ("Rango = máximo - mínimo en todas las variables numéricas",
+         all(abs(g.set_index("medida").loc["rango", "valor"] -
+                 (g.set_index("medida").loc["maximo", "valor"] - g.set_index("medida").loc["minimo", "valor"])) < 0.01
+             for _, g in estadisticas[estadisticas["tipo"] == "numerica"].groupby("variable"))),
+        ("Los porcentajes de cada variable categórica suman 100 %",
+         all(abs(g["porcentaje"].astype(float).sum() - 100) < 0.1
+             for _, g in estadisticas[estadisticas["tipo"] == "categorica"].groupby("variable"))),
+        ("Pendiente de numpy coincide con la fórmula de mínimos cuadrados",
+         abs(pendiente_manual - pendiente_numpy) < 1e-9),
+        ("Total de sismos del indicador 1 coincide con el número de filas",
+         str(len(datos)).replace(",", "") in indicadores.loc[0, "resultado"].replace(".", "")),
+    ]
+    todo_ok = True
+    for descripcion, ok in controles:
+        print(("[OK]    " if ok else "[ERROR] ") + descripcion)
+        todo_ok = todo_ok and ok
+    return todo_ok
