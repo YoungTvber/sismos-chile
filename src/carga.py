@@ -33,6 +33,24 @@ def cargar_datos(ruta):
     return None
 
 
+def cargar_dataset_limpio(ruta):
+    """
+    Carga el dataset limpio del Avance 2 y reconstruye la columna de fecha.
+
+    El CSV guarda las fechas como texto (algunas con fracciones de segundo y
+    otras sin ellas), por eso se interpretan con el formato ISO 8601.
+    """
+    datos = cargar_datos(ruta)
+    if datos is None:
+        return None
+    try:
+        datos["fecha_hora"] = pd.to_datetime(datos["fecha_hora"], utc=True, format="ISO8601")
+    except (ValueError, TypeError):
+        # versiones antiguas de pandas no conocen format="ISO8601"
+        datos["fecha_hora"] = pd.to_datetime(datos["fecha_hora"], utc=True)
+    return datos
+
+
 def inspeccionar_datos(datos):
     """Muestra por consola una inspección inicial del DataFrame (Avance 1)."""
     if datos is None:
