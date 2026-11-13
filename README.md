@@ -21,6 +21,8 @@ Abre una ventana (Tkinter + Matplotlib) con:
 - **Indicadores automáticos:** promedio anual, máximo, mínimo, registro y tendencia.
 - **Proyección:** línea amarilla segmentada con tres modelos (tendencia lineal, promedio móvil y media ± desviación), horizonte, parámetro y ajuste configurables, y comparación entre dos métodos.
 
+Para generar un ejecutable en Windows, hacer doble clic en `compilar_exe.bat` (crea `dist/DashboardSismos.exe`).
+
 Requiere un Python con tkinter (incluido en la instalación estándar de Windows y macOS; en Linux: `sudo apt install python3-tk`).
 
 ## Estructura

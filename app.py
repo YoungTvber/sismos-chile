@@ -16,7 +16,8 @@ import numpy as np
 from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 from matplotlib.figure import Figure
 
-BASE = os.path.dirname(os.path.abspath(__file__))
+# Dentro del .exe, los archivos se extraen en sys._MEIPASS
+BASE = getattr(sys, "_MEIPASS", os.path.dirname(os.path.abspath(__file__)))
 sys.path.insert(0, BASE)
 
 from src.carga import cargar_dataset_limpio          # noqa: E402
