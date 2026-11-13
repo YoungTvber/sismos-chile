@@ -4,10 +4,24 @@ Proyecto Final Integrador - Programación Avanzada (Ing. Civil Plan Común, Sede
 - Avance 1: problema, fuente de datos, pipeline y carga inicial.
 - Avance 2: diagnóstico de calidad, limpieza, tratamiento de nulos y transformaciones.
 - Avance 3: estadística descriptiva, indicadores automatizados y gráficos.
+- Avance 4: dashboard interactivo con filtros, indicadores y proyecciones (`app.py`).
 
 ## Pregunta del proyecto
 ¿La frecuencia anual de los sismos de magnitud 4,5 o superior en Chile aumenta o disminuye
 entre 2000 y 2024, y cambia según la magnitud?
+
+## Dashboard (Avance 4)
+```
+python app.py
+```
+Abre una ventana (Tkinter + Matplotlib) con:
+- **Filtros:** período (desde/hasta), magnitud mínima, clase de profundidad y exclusión de los años de grandes terremotos.
+- **Escenarios:** zonas norte, centro, sur, austral e insular, comparadas en el mismo gráfico.
+- **Línea de visión:** año de lectura (deslizador o clic en el gráfico).
+- **Indicadores automáticos:** promedio anual, máximo, mínimo, registro y tendencia.
+- **Proyección:** línea amarilla segmentada con tres modelos (tendencia lineal, promedio móvil y media ± desviación), horizonte, parámetro y ajuste configurables, y comparación entre dos métodos.
+
+Requiere un Python con tkinter (incluido en la instalación estándar de Windows y macOS; en Linux: `sudo apt install python3-tk`).
 
 ## Estructura
 ```
@@ -18,7 +32,7 @@ resultados/
   estadisticas.csv      estadísticas descriptivas
   indicadores.csv       indicadores automatizados
   graficos/             grafico_01.png, grafico_02.png, grafico_03.png
-reportes/       avance_1.pdf, avance_2.pdf, avance_3.pdf y registro_limpieza.txt
+reportes/       avance_1.pdf a avance_4.pdf, registro_limpieza.txt y capturas/
 src/
   carga.py              lectura y exportación
   limpieza.py           nombres, texto, duplicados, área de estudio y nulos
@@ -28,6 +42,9 @@ src/
   estadisticas.py       estadística descriptiva
   indicadores.py        indicadores automatizados
   visualizaciones.py    gráficos con Pyplot
+  filtros.py            filtros, series por escenario e indicadores del dashboard
+  modelos.py            modelos de proyección
+app.py                  dashboard interactivo (Avance 4)
 main.py                 ejecuta el análisis del Avance 3
 ```
 
